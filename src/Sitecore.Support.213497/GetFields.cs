@@ -11,6 +11,8 @@
   using Sitecore.Shell.Applications.ContentEditor.Pipelines.GetContentEditorFields;
   using Sitecore.Shell.Applications.ContentManager;
   using System;
+  using System.Collections.Generic;
+  using System.Linq;
   using System.Runtime.CompilerServices;
 
   public class GetFields
@@ -44,14 +46,63 @@
       fields.Sort();
       return Assert.ResultNotNull<FieldCollection>(fields);
     }
-
+    private int CompareFields(int sortorder1, int sortorder2, string fieldName1, string fieldName2)
+    {
+      if (sortorder1 != sortorder2)
+      {
+        return (sortorder1 - sortorder2);
+      }
+      if ((fieldName1.Length > 0) && (fieldName2.Length > 0))
+      {
+        if ((fieldName1[0] == '_') && (fieldName2[0] != '_'))
+        {
+          return 1;
+        }
+        if ((fieldName2[0] == '_') && (fieldName1[0] != '_'))
+        {
+          return -1;
+        }
+      }
+      return fieldName1.CompareTo(fieldName2);
+    }
+    private int CompareSections(int sectionSortorder1, int sectionSortorder2, string section1, string section2)
+    {
+      if (sectionSortorder1 != sectionSortorder2)
+      {
+        return (sectionSortorder1 - sectionSortorder2);
+      }
+      if ((section1.Length > 0) && (section2.Length > 0))
+      {
+        if ((section1[0] == '_') && (section2[0] != '_'))
+        {
+          return 1;
+        }
+        if ((section2[0] == '_') && (section1[0] != '_'))
+        {
+          return -1;
+        }
+      }
+      return section1.CompareTo(section2);
+    }
     private void GetSections(GetContentEditorFieldsArgs args)
     {
       Assert.ArgumentNotNull(args, "args");
       Item item = args.Item;
       Assert.IsNotNull(item, "item");
       Editor.Sections sections = args.Sections;
-      foreach (Sitecore.Data.Fields.Field field in GetFieldCollection(item))
+
+      List<Field> fields = GetFieldCollection(item).ToList();
+      fields.Sort((x, y) =>
+      {
+        int num = CompareFields(x.Sortorder, y.Sortorder, x.Name, y.Name);
+        if (num != 0)
+        {
+          return num;
+        }
+        return CompareSections(x.SectionSortorder, y.SectionSortorder, x.Section, y.Section);
+      });
+
+      foreach (Sitecore.Data.Fields.Field field in fields)
       {
         TemplateField templateField = field.GetTemplateField();
         if ((templateField != null) && this.CanShowField(field, templateField))
