@@ -46,6 +46,7 @@
       fields.Sort();
       return Assert.ResultNotNull<FieldCollection>(fields);
     }
+    //helper method 
     private int CompareFields(int sortorder1, int sortorder2, string fieldName1, string fieldName2)
     {
       if (sortorder1 != sortorder2)
@@ -65,6 +66,7 @@
       }
       return fieldName1.CompareTo(fieldName2);
     }
+    //helper method
     private int CompareSections(int sectionSortorder1, int sectionSortorder2, string section1, string section2)
     {
       if (sectionSortorder1 != sectionSortorder2)
@@ -90,7 +92,7 @@
       Item item = args.Item;
       Assert.IsNotNull(item, "item");
       Editor.Sections sections = args.Sections;
-
+      #region Modified code 
       List<Field> fields = GetFieldCollection(item).ToList();
       fields.Sort((x, y) =>
       {
@@ -101,7 +103,7 @@
         }
         return CompareSections(x.SectionSortorder, y.SectionSortorder, x.Section, y.Section);
       });
-
+      #endregion
       foreach (Sitecore.Data.Fields.Field field in fields)
       {
         TemplateField templateField = field.GetTemplateField();
